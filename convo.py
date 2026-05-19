@@ -36,13 +36,23 @@ def make_kernel(ksize, sigma):
 def slow_convolve(arr, k):
 
     out_img = np.zeros_like(arr, dtype=float)
-
     ksize = k.shape[0]
-    height, width, channel = arr.shape
     r = ksize // 2
-
-    pad = ksize // 2
-    padded = np.pad(arr, pad_width=pad, mode='constant', constant_values=0)
+    if len(arr.shape) == 2:
+        height, width = arr.shape
+        padded = np.pad(arr,((r,r), (r,r)), mode='constant', constant_values=0)
+        for i in range(height):
+            for j in range(width):
+                patch = padded[i:i + ksize, j:j + ksize]
+                out_img[i, j] = np.sum(patch * k)
+    else:
+        height, width, channel = arr.shape
+        padded = np.pad(arr,((r,r), (r,r), (0,0)), mode='constant', constant_values=0)
+        for i in range(height):
+            for j in range(width):
+                for c in range(channel):
+                    patch = padded[i:i + ksize, j:j + ksize, c]
+                    out_img[i, j, c] = np.sum(patch * k)
 
     """
     for i in range(width):
@@ -55,18 +65,13 @@ def slow_convolve(arr, k):
                 out_img[i, j, c] = value
     """
 
-    for i in range(height):
-        for j in range(width):
-            for c in range(channel):
-                patch = padded[i:i + ksize, j:j + ksize, c]
-                out_img[i, j, c] = np.sum(patch * k)
     out_img = np.clip(out_img, 0, 255)
     out_img = out_img.astype(np.uint8)
     return out_img
 
 
 if __name__ == '__main__':
-    k = make_kernel(2, 1)  # todo: find better parameters original: ksize 3, sigma 1
+    k = make_kernel(25, 5)  # todo: find better parameters original: ksize 3, sigma 1
     
     # TODO: chose the image you prefer
     # im = np.array(Image.open('data/input1.jpg'))
