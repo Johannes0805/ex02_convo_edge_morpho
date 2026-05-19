@@ -5,30 +5,67 @@ import numpy as np
 
 from morphological import show_image
 
+"""
+def make_kernel(ksize, sigma):
+   # implement the Gaussian kernel here
+   r = ksize // 2
+
+   kernel = np.zeros((ksize, ksize))
+   for i in range(ksize):
+       for j in range(ksize):
+           x = i - ksize
+           y = j - ksize
+           kernel[i, j] = np.exp(-(x**2 + y**2) / (2 * sigma**2))
+
+   kernel = kernel / np.sum(kernel)
+
+   ###############################################################
+
+   y, x = np.mgrid[-r : r + 1, -r : r + 1]
+
+   kernel = np.exp(x**2 + y**2 / (2 * sigma**2))
+
+   kernel = kernel / np.sum(kernel)
+
+
+
+   return kerneldef make_kernel(ksize, sigma):
+   # implement the Gaussian kernel here
+   r = ksize // 2
+   kernel = np.zeros((ksize, ksize))
+   for i in range(ksize):
+       for j in range(ksize):
+           x = i - ksize
+           y = j - ksize
+           kernel[i, j] = np.exp(-(x**2 + y**2) / (2 * sigma**2))
+
+   kernel = kernel / np.sum(kernel)
+   ###############################################################
+
+   y, x = np.mgrid[-r : r + 1, -r : r + 1]
+
+   kernel = np.exp(x**2 + y**2 / (2 * sigma**2))
+
+   kernel = kernel / np.sum(kernel)
+
+
+   return kernel
+   """
+
 
 def make_kernel(ksize, sigma):
-    # implement the Gaussian kernel here
     r = ksize // 2
-    """
-    kernel = np.zeros((ksize, ksize))
-    for i in range(ksize):
-        for j in range(ksize):
-            x = i - ksize
-            y = j - ksize
-            kernel[i, j] = np.exp(-(x**2 + y**2) / (2 * sigma**2))
-
-    kernel = kernel / np.sum(kernel)
-    """
-    ###############################################################
-
     y, x = np.mgrid[-r : r + 1, -r : r + 1]
 
-    kernel = np.exp(x**2 + y**2 / (2 * sigma**2))
+    # 1. Das Minus ist wichtig!
+    # 2. Die Klammer um (x**2 + y**2) ist wichtig!
+    kernel = np.exp(-(x**2 + y**2) / (2 * sigma**2))
 
+    # Normalisieren (Summe muss 1 sein)
     kernel = kernel / np.sum(kernel)
-
-
     return kernel
+
+
 
 
 
@@ -67,8 +104,7 @@ def slow_convolve(arr, k):
                 out_img[i, j, c] = value
     """
 
-    out_img = np.clip(out_img, 0, 255)
-    out_img = out_img.astype(np.uint8)
+    out_img = np.clip(out_img, 0, 255).astype(np.uint8)
     return out_img
 
 
