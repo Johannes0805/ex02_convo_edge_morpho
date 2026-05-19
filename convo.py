@@ -36,22 +36,24 @@ def make_kernel(ksize, sigma):
 def slow_convolve(arr, k):
 
     out_img = np.zeros_like(arr, dtype=float)
-    ksize = k.shape[0]
-    r = ksize // 2
+    kh, kw = k.shape
+    rh = kh // 2
+    rw = kw // 2
     if len(arr.shape) == 2:
         height, width = arr.shape
-        padded = np.pad(arr,((r,r), (r,r)), mode='constant', constant_values=0)
+        print("kernel shape:", k.shape)
+        padded = np.pad(arr,((rh,rh), (rw,rw)), mode='constant', constant_values=0)
         for i in range(height):
             for j in range(width):
-                patch = padded[i:i + ksize, j:j + ksize]
+                patch = padded[i:i + kh, j:j + kw]
                 out_img[i, j] = np.sum(patch * k)
     else:
         height, width, channel = arr.shape
-        padded = np.pad(arr,((r,r), (r,r), (0,0)), mode='constant', constant_values=0)
+        padded = np.pad(arr,((rh,rh), (rw,rw), (0,0)), mode='constant', constant_values=0)
         for i in range(height):
             for j in range(width):
                 for c in range(channel):
-                    patch = padded[i:i + ksize, j:j + ksize, c]
+                    patch = padded[i:i + kh, j:j + kw, c]
                     out_img[i, j, c] = np.sum(patch * k)
 
     """
