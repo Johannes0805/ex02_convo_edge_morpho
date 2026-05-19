@@ -44,7 +44,7 @@ def slow_convolve(arr, k):
     pad = ksize // 2
     padded = np.pad(arr, pad_width=pad, mode='constant', constant_values=0)
 
-
+    """
     for i in range(width):
         for j in range(height):
             for c in range(channel):
@@ -53,19 +53,27 @@ def slow_convolve(arr, k):
                     for v in range(ksize):
                             value += k[u, v] * padded[i + u, j + v, c]
                 out_img[i, j, c] = value
+    """
 
+    for i in range(height):
+        for j in range(width):
+            for c in range(channel):
+                patch = padded[i:i + ksize, j:j + ksize, c]
+                out_img[i, j, c] = np.sum(patch * k)
+    out_img = np.clip(out_img, 0, 255)
+    out_img = out_img.astype(np.uint8)
     return out_img
 
 
 if __name__ == '__main__':
-    k = make_kernel(30, 1)  # todo: find better parameters original: ksize 3, sigma 1
+    k = make_kernel(2, 1)  # todo: find better parameters original: ksize 3, sigma 1
     
     # TODO: chose the image you prefer
     # im = np.array(Image.open('data/input1.jpg'))
     # im = np.array(Image.open('data/input2.jpg'))
     im = np.array(Image.open('data/input3.jpg'))
     o_img = slow_convolve(im, k)
-    show_image(o_img)
+    show_image(o_img, "input3_convolved")
 
     # TODO: blur the image, subtract the result to the input,
     #       add the result to the input, clip the values to the
