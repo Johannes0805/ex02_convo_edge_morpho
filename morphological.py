@@ -34,19 +34,18 @@ def erode_binary(image: np.ndarray, structuring_element: np.ndarray) -> np.ndarr
 
     x_len, y_len = image.shape
 
+    # ToDo: Iterate over the provided image and perform erosion around each pixel.
+    # ToDo: Hint: Use the extract_region function to get the area around each pixel.
+    # ToDo: Hint: Don't forget that the extract region function receives the padded image and the corresponding centers.
     for x in range(x_len):
         for y in range(y_len):
             # getting the region (added radius to x and y value as it is shifted due to the padding)
             region = extract_region(padded_img, x + radius, y + radius, se_size)
-            # region needs a 1 everytime the se has a 1
+            # region needs a 1 *everytime* the se has a 1
             if np.all(region[structuring_element == 1] == 1):
                 output[x, y] = 1
             else:
                 output[x,y] = 0
-
-    # ToDo: Iterate over the provided image and perform erosion around each pixel.
-    # ToDo: Hint: Use the extract_region function to get the area around each pixel.
-    # ToDo: Hint: Don't forget that the extract region function receives the padded image and the corresponding centers.
     return output
 
 
@@ -62,19 +61,18 @@ def dilate_binary(image: np.ndarray, structuring_element: np.ndarray) -> np.ndar
     padded_img = pad_image(image, radius)
 
     x_len, y_len = image.shape
-
+    # ToDo: Iterate over the provided image and perform dilation around each pixel.
+    # ToDo: Hint: Use the extract_region function to get the area around each pixel.
+    # ToDo: Hint: Don't forget that the extract region function receives the padded image and the corresponding centers.
     for x in range(x_len):
         for y in range(y_len):
             # getting the region (added radius to x and y value as it is shifted due to the padding)
             region = extract_region(padded_img, x + radius, y + radius, se_size)
-            # region needs a 1 everytime the se has a 1
+            # region needs a 1 *once* when the se has a 1
             if np.any(region[structuring_element == 1] == 1):
                 output[x, y] = 1
             else:
                 output[x,y] = 0
-    # ToDo: Iterate over the provided image and perform dilation around each pixel.
-    # ToDo: Hint: Use the extract_region function to get the area around each pixel.
-    # ToDo: Hint: Don't forget that the extract region function receives the padded image and the corresponding centers.
     return output
 
 

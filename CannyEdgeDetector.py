@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import convolve
-import cv2
+#import cv2
+
 #
 # NO MORE MODULES ALLOWED
 #
@@ -27,10 +28,10 @@ def gaussFilter(img_in, ksize, sigma):
             y = i - radius
             # used the fomula given in the lecture to create the kernel with right values
             kernel[i, j] = np.exp(-(x ** 2 + y ** 2) / (2 * sigma ** 2))
-
-    kernel /= np.sum(kernel) # normalize kernel, so that it sums up to 1
-
-    filtered = convolve(img_in, kernel) # apply kernel onto the image
+    # normalize kernel, so that it sums up to 1
+    kernel /= np.sum(kernel)
+    # convolve the image
+    filtered = convolve(img_in, kernel)
 
     return kernel, filtered.astype(int) # converted back to int as the test failed if not done
 
@@ -43,20 +44,21 @@ def sobel(img_in):
     :param img_in: input image (np.ndarray)
     :return: gx, gy - sobel filtered images in x- and y-direction (np.ndarray, np.ndarray)
     """
-    # create the kernel like discribed in the lecture
+    # create the kernel like described in the lecture
     gx_kernel = np.array([
         [-1, 0, 1],
         [-2, 0, 2],
         [-1, 0, 1]
     ])
 
-    # flipped this kernel as convolve does fliped it aswell
+    # flipped this kernel as convolve does flip it as well
     gy_kernel = np.flip(np.array([
         [-1, -2, -1],
         [0, 0, 0],
         [1, 2, 1]
     ]))
 
+    # convolve the image with both kernels
     gx = convolve(img_in, gx_kernel).astype(int)
     gy = convolve(img_in, gy_kernel).astype(int)
 
@@ -70,7 +72,7 @@ def gradientAndDirection(gx, gy):
     :param gy: sobel filtered image in x direction (np.ndarray)
     :return: g, theta (np.ndarray, np.ndarray)
     """
-
+    # applied fomulas given in the lecture slides
     return np.sqrt(gx**2 + gy**2).astype(int), np.arctan2(gy, gx)
 
 def convertAngle(angle):
@@ -79,10 +81,10 @@ def convertAngle(angle):
     :return: nearest match of {0, 45, 90, 135} 
     """
     m_angle = 45 / 2
-
-    angle = np.degrees(angle) # convert radiant to degrees
-
-    angle = angle % 180 # handling angles larger than 180
+    # convert radiant to degrees
+    angle = np.degrees(angle)
+    # handling angles larger than 180
+    angle = angle % 180
 
     if 0 <= angle < m_angle or angle >= (135 + m_angle):
         angle_snaped = 0
@@ -98,36 +100,35 @@ def convertAngle(angle):
 def maxSuppress(g, theta):
     """
     calculate maximum suppression
-    :param g:  (np.ndarray)
-    :param theta: 2d image (np.ndarray)
+    :param g: (np.ndarray) contains the strength of the gradient
+    :param theta: 2d image (np.ndarray) contains the direction of the gradient
     :return: max_sup (np.ndarray)
     """
     # TODO Hint: For 2.3.1 and 2 use the helper method above
 
     x_len, y_len = g.shape
     res = np.zeros_like(g) # create a new array sized like the g matrix
+    # g includes padding that should not be considered in the result
     for x in range(1, x_len - 1):
         for y in range(1, y_len - 1):
-            nb1 = 0
-            nb2 = 0
             conv_angle = convertAngle(theta[x,y])
-
+            # case: horizontal, check left and right
             if conv_angle == 0:
                 nb1 = g[x, y-1]
                 nb2 = g[x, y+1]
-
+            # case: left low and right above
             elif conv_angle == 45:
                 nb1 = g[x-1, y+1]
                 nb2 = g[x+1, y-1]
-
+            # case: vertical, check above and below
             elif conv_angle == 90:
                 nb1 = g[x-1, y]
                 nb2 = g[x+1, y]
-
+            # case: left up and right below
             else:
                 nb1 = g[x-1, y-1]
                 nb2 = g[x+1, y+1]
-
+            # value can be kept if it is larger than both of his neighbors
             if g[x, y] >= nb1 and g[x, y] >= nb2:
                 res[x, y] = g[x, y]
             else:
@@ -155,7 +156,6 @@ def hysteris(max_sup, t_low, t_high):
     for x in range(x_len):
         for y in range(y_len):
             p_value = max_sup[x,y]
-
             if p_value <= t_low:
                 tresh[x,y] = 0
             elif p_value <= t_high:
@@ -163,21 +163,21 @@ def hysteris(max_sup, t_low, t_high):
             else:
                 tresh[x,y] = 2
 
-    # Setting the correct hypothesis values
+    # Setting the correct hypothesis values using thresh
     for x in range(x_len):
         for y in range(y_len):
 
             if tresh[x, y] == 2:
                 res[x,y] = 255
-
+                # search for neighbors with minimum normal values
                 for dx in range(-1, 2):
                     for dy in range(-1, 2):
+                        # skip weak neighbors
                         if dx == 0 and dy == 0:
                             continue
-
+                        # check that the neighbors are within the img and not outside
                         nx = x + dx
                         ny = y + dy
-
                         if 0 <= nx < x_len and 0 <= ny < y_len:
                             if tresh[nx, ny] >= 1:
                                 res[nx, ny] = 255
@@ -185,7 +185,7 @@ def hysteris(max_sup, t_low, t_high):
 
 
 def canny(img):
-    # gaussian
+    # apply gaussian filter to img
     kernel, gauss = gaussFilter(img, 5, 2)
 
     # sobel
@@ -227,8 +227,9 @@ def canny(img):
 
     return result
 
-
+"""
 if __name__ == '__main__':
-    im = cv2.imread("data/input1.jpg")
+    im = cv2.imread("data/input3.jpg")
     im = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
     canny(np.array(im))
+"""
